@@ -1,0 +1,41 @@
+name: Run build ubuntu 20.04
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Check Disk Space
+      run: df -h
+
+    - name: Update modules
+      run: git submodule update --init --recursive
+
+    - name: Create dir
+      run: mkdir ${{github.workspace}}/Build && cd ${{github.workspace}}/Build
+
+    - name: where i'm
+      run: pwd
+
+    - name: Configure CMake
+      run: cmake -DCMAKE_BUILD_TYPE:STRING=Release -DVIAME_ENABLE_CUDA=OFF -DVIAME_ENABLE_CUDNN=OFF -S ${{github.workspace}} -B .
+
+    - name: Check Disk Space
+      run: df -h
+
+    - name: Build
+      run: make -j4
+    
+    - name: Check number of files
+      run: find /home/runner/work/VIAME/VIAME/Build -type f | wc -l
+
+    - name: upload report
+      uses: actions/upload-artifact@v2
+      with:
+        retention-days: 30
+        path: /home/runner/work/VIAME/VIAME/Build/build
